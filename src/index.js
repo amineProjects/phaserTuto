@@ -27,16 +27,18 @@ const config = {
   }
 };
 
-let platforms;
-let platformPositions = [
-  { x: 400, y: 568 },
-  { x: 600, y: 400 },
-  { x: 50, y: 250 },
-  { x: 750, y: 220 }
-];
-let player;
-let cursors;
-let stars;
+let platforms,
+  platformPositions = [
+    { x: 400, y: 568 },
+    { x: 600, y: 400 },
+    { x: 50, y: 250 },
+    { x: 750, y: 220 }
+  ],
+  player,
+  cursors,
+  stars,
+  score = 0,
+  scoreText;
 
 let game = new Phaser.Game(config);
 
@@ -70,6 +72,12 @@ function create() {
   stars.children.iterate(child => {
     child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
   });
+
+  scoreText = this.add.text(16, 16, "score:0", {
+    fontSize: "32px",
+    fill: "#000"
+  });
+
   player = this.physics.add.sprite(100, 450, "dude");
   player.setBounce(0.2);
   player.setCollideWorldBounds(true);
@@ -100,6 +108,7 @@ function create() {
 
 function collectStar(player, star) {
   star.disableBody(true, true);
+  scoreText.setText(`Score: ${(score += 10)}`);
 }
 
 function update() {
