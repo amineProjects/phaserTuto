@@ -38,7 +38,9 @@ let platforms,
   cursors,
   stars,
   score = 0,
-  scoreText;
+  scoreText,
+  bombs,
+  gameOver = false;
 
 let game = new Phaser.Game(config);
 
@@ -78,6 +80,8 @@ function create() {
     fill: "#000"
   });
 
+  bombs = this.physics.add.group();
+
   player = this.physics.add.sprite(100, 450, "dude");
   player.setBounce(0.2);
   player.setCollideWorldBounds(true);
@@ -100,6 +104,8 @@ function create() {
     repeat: -1
   });
 
+  this.physics.add.collider(bombs, platforms);
+  this.physics.add.collider(bombs, player, hitBomb, null, this);
   this.physics.add.collider(player, platforms);
   this.physics.add.collider(stars, platforms);
   this.physics.add.overlap(player, stars, collectStar, null, this);
@@ -109,9 +115,29 @@ function create() {
 function collectStar(player, star) {
   star.disableBody(true, true);
   scoreText.setText(`Score: ${(score += 10)}`);
+  if (stars.countActive(true) === 0) {
+    stars.children.iterate(child =>
+      child.enableBody(true, child.x, 0, true, true)
+    );
+  }
+  let x =
+    player.x < 400
+      ? Phaser.Math.Between(400, 800)
+      : Phaser.Math.Between(0, 400);
+  let Bomb = bombs.create(x, 16, "bomb");
+  Bomb.setBounce(1);
+  Bomb.setCollideWorldBounds(true);
+  Bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
 }
 
+function hitBomb(player) {
+  this.physics.pause();
+  player.setTint(0xff0000);
+  player.anims.play("turn");
+  gameOver = true;
+}
 function update() {
+  if (gameOver) return;
   if (cursors.left.isDown) {
     player.setVelocityX(-160);
     player.anims.play("left", true);
