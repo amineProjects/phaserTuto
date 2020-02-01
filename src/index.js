@@ -36,6 +36,7 @@ let platformPositions = [
 ];
 let player;
 let cursors;
+let stars;
 
 let game = new Phaser.Game(config);
 
@@ -49,6 +50,7 @@ function preload() {
 
 function create() {
   this.add.image(0, 0, "sky").setOrigin(0, 0);
+
   platforms = this.physics.add.staticGroup();
   platformPositions.forEach((p, index) => {
     if (index === 0) {
@@ -60,6 +62,14 @@ function create() {
     platforms.create(p.x, p.y, "ground");
   });
 
+  stars = this.physics.add.group({
+    key: "star",
+    repeat: 11,
+    setXY: { x: 12, y: 0, stepX: 70 }
+  });
+  stars.children.iterate(child => {
+    child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+  });
   player = this.physics.add.sprite(100, 450, "dude");
   player.setBounce(0.2);
   player.setCollideWorldBounds(true);
@@ -83,7 +93,13 @@ function create() {
   });
 
   this.physics.add.collider(player, platforms);
+  this.physics.add.collider(stars, platforms);
+  this.physics.add.overlap(player, stars, collectStar, null, this);
   cursors = this.input.keyboard.createCursorKeys();
+}
+
+function collectStar(player, star) {
+  star.disableBody(true, true);
 }
 
 function update() {
